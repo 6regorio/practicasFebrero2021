@@ -1,56 +1,37 @@
 package android;
 
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
-import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Test;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.nativekey.AndroidKey;
 import io.appium.java_client.android.nativekey.KeyEvent;
-import io.appium.java_client.remote.MobileCapabilityType;
-import io.appium.java_client.remote.MobilePlatform;
 
 
 @Test
 public class AndroidSinAutenticar {
 
-  private String reportDirectory = "reports";
-  private String reportFormat = "xml";
-  private String testName = "Untitled";
   protected AndroidDriver<WebElement> driver = null;
-  DesiredCapabilities dc;
 
-  @BeforeSuite
+  @BeforeClass
   /**
    * Carga todo lo necesario para conectarse con el emulador de Android
    * 
    * @throws MalformedURLException
    */
   public void setUp() throws MalformedURLException {
-
-    dc = new DesiredCapabilities();
-    dc.setCapability(MobileCapabilityType.PLATFORM_NAME, MobilePlatform.ANDROID);
-    dc.setCapability("reportDirectory", reportDirectory);
-    dc.setCapability("reportFormat", reportFormat);
-    dc.setCapability("testName", testName);
-    dc.setCapability("name", "Pixel 4 API 24");
-
-    driver = new AndroidDriver<>(new URL("http://localhost:4723/wd/hub"), dc);
-    driver.setLogLevel(Level.INFO);
-
-    driver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
+    driver = AndroidConAutenticacion.driver;
 
     driver.pressKey(new KeyEvent().withKey(AndroidKey.HOME));
+
+    WebDriverWait wait = new WebDriverWait(driver, 30);
+    wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[@text='MyApp']")));
     driver.findElement(By.xpath("//*[@text='MyApp']")).click();
   }
 
@@ -193,7 +174,7 @@ public class AndroidSinAutenticar {
   /**
    * Comprueba pulsar más y entrar en contacto
    */
-  @Test(priority = 3, groups = "Comprobaciones sin iniciar sesión")
+  @Test(priority = 4, groups = "Comprobaciones sin iniciar sesión")
   public void masContacto() {
     driver.findElement(By.xpath("//*[@text='menu']")).click();
     driver.findElement(By.xpath("//*[@text='Contacto']")).click();
@@ -202,20 +183,6 @@ public class AndroidSinAutenticar {
     Assert.assertEquals(
         driver.findElement(By.xpath("//*[@resource-id='com.android.chrome:id/url_bar']")).getText(),
         "sanidad.castillalamancha.es/ciudadanos/reclamaciones");
-    /*
-     * driver.context("WEBVIEW_chrome"); Assert.assertTrue(
-     * driver.findElement(By.xpath("//span[contains(.,'Consejería de Sanidad')]")).isDisplayed());
-     * driver.context("NATIVE_APP");
-     */
     driver.pressKey(new KeyEvent().withKey(AndroidKey.BACK));
-  }
-
-
-
-  @AfterTest
-  public void tearDown() {
-    driver.findElement(By.xpath("//*[@text='Inicio']")).click();
-    driver.pressKey(new KeyEvent().withKey(AndroidKey.HOME));
-    driver.quit();
   }
 }
